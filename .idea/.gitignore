@@ -1,0 +1,51 @@
+# -----------------------------
+# PyCharm / IntelliJ
+# -----------------------------
+.idea/
+.shelf/
+workspace.xml
+
+# -----------------------------
+# Python cache & bytecode
+# -----------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+
+# -----------------------------
+# Virtual environments
+# -----------------------------
+venv/
+.env/
+.venv/
+
+# -----------------------------
+# Jupyter Notebook
+# -----------------------------
+.ipynb_checkpoints/
+
+# -----------------------------
+# Data files (raw & intermediate)
+# -----------------------------
+data/*.xlsx
+data/*.parquet
+bad_lines_log.csv
+
+# -----------------------------
+# Model artifacts
+# -----------------------------
+models/
+*.pkl
+*.joblib
+
+# -----------------------------
+# Logs & outputs
+# -----------------------------
+logs/
+*.log
+
+# -----------------------------
+# OS-specific
+# -----------------------------
+.DS_Store
+Thumbs.db
