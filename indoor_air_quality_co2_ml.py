@@ -23,6 +23,12 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import StandardScaler
 import os
+import matplotlib
+matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
+import importlib
+importlib.reload(utils)
+
 # !pip install catboost
 # !pip install lightgbm
 # !pip install xgboost
@@ -42,26 +48,13 @@ base_path = os.path.join(os.getcwd(), "data")
 file_name = "Air-Quality-Dataset.csv"
 data_path = os.path.join(base_path, file_name)
 
-df = utils.load_data(data_path)
-# --- Check first rows ---
-df.head()
-
-df.dtypes
-
-
-
 # Read CSV with semicolon delimiter
-df = pd.read_csv("data/Air-Quality-Dataset.csv", sep=';', decimal='.')
-
-# Convert TIME column to datetime
-df['TIME'] = pd.to_datetime(df['TIME'], errors='coerce')
-
-# Check dtypes
-df.dtypes
+df = utils.load_data(data_path)
+df.head()
 
 # --- Data Overview ---
 df.info()       # Check null values and types
-df.describe()   # Summary statistics for numeric columns
+df.describe().T   # Summary statistics for numeric columns
 
 # --- Check unique values for categorical columns ---
 df['CO2 CATEGORY'].value_counts()
@@ -87,3 +80,24 @@ for col in numeric_cols:
     plt.xlabel(col)
     plt.ylabel("Frequency")
     plt.show()
+
+
+# Visualization of numerical variables
+for col in numeric_cols:
+    utils.num_summary(df, col, plot=True)
+
+# Correlation analysis between numerical variables
+utils.correlation_matrix(df, numeric_cols)
+
+# Correlation summary:
+############################
+# - Humidity shows weak or negligible correlation with CO2 and particulate matter
+# - Temperature is moderately inversely correlated with humidity
+# - PM2.5 and PM10 exhibit strong positive correlation (0.66), indicating shared sources
+# - Low overall correlation suggests minimal feature redundancy
+
+
+
+# Data Preprocessing & Feature Engineering
+##############################################################
+X_train, X_test, y_train, y_test, scaler = utils.air_quality_pipeline(df)
