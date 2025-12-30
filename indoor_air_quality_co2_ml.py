@@ -29,14 +29,6 @@ import matplotlib.pyplot as plt
 import importlib
 importlib.reload(utils)
 
-# !pip install catboost
-# !pip install lightgbm
-# !pip install xgboost
-
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-from catboost import CatBoostClassifier
-
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', 500)
 
@@ -101,3 +93,18 @@ utils.correlation_matrix(df, numeric_cols)
 # Data Preprocessing & Feature Engineering
 ##############################################################
 X_train, X_test, y_train, y_test, scaler = utils.air_quality_pipeline(df)
+
+######################################################
+# Base Models
+######################################################
+preprocessor = 'passthrough'
+
+results = utils.base_models_pipeline(X_train, y_train, preprocessor=preprocessor, scoring="roc_auc", cv=3)
+
+print(results)
+
+cat_cols, num_cols, cat_but_car = utils.grab_col_names(df)
+print("Categorical:", cat_cols)
+print("Numerical:", num_cols)
+print("Cat but cardinal:", cat_but_car)
+
