@@ -17,6 +17,8 @@ import os
 sys.path.append(os.path.join(os.getcwd(), "src"))
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("TkAgg")
 
 # Import functions from src modules
 from data_loader import load_data
@@ -172,9 +174,14 @@ print("Categorical Columns:", cat_cols)
 print("Numerical Columns:", num_cols)
 print("Categorical but Cardinal Columns:", cat_but_car)
 
-# 4. One-Hot Encoding (optional)
-# - Convert categorical variables into dummy/indicator variables
-# df = one_hot_encoder(df, categorical_cols=cat_cols, drop_first=True)
+# ==============================
+# ONE-HOT ENCODING
+# ==============================
+
+df_encoded = one_hot_encoder(df, categorical_cols=cat_cols)
+
+print(df_encoded.columns)
+
 
 # ==========================================================
 # HUMIDITY Normalization / Scaling
@@ -194,3 +201,51 @@ print(df["HUMIDITY"].describe())
 # 2. Interaction features help models capture combined effects
 # 3. HUMIDITY normalized to 0-100 range to make it physically meaningful
 # 4. Dataset is now ready for model training
+
+
+# ========================================
+# Preprocessing & Train/Test Split
+# ========================================
+
+# Here we scale numerical features and split the dataset into training and testing sets
+X_train, X_test, y_train, y_test, scaler = preprocess_for_model(df_encoded,
+                                                                target_col="CO2",
+                                                                scaler_type="standard",
+                                                                test_size=0.2,
+                                                                random_state=42)
+
+X_train.columns
+# ========================================
+# 2. Build Regression Models
+# ========================================
+# Create a dictionary of regression models to train
+models = build_regression_models()
+
+# ========================================
+# 3. Train Models
+# ========================================
+# Fit each model on the training data
+trained_models = train_models(models, X_train, y_train)
+
+# ========================================
+# 4. Evaluate Models
+# ========================================
+# Evaluate each model on the test set
+for name, model in trained_models.items():
+    y_pred = model.predict(X_test)
+    metrics = regression_metrics(y_test, y_pred)
+    print(f"{name} performance:")
+    print(metrics)
+    print("-"*40)
+
+# ========================================
+# 5. Visualize Predictions
+# ========================================
+# Plot actual vs predicted CO2 for one of the models (e.g., RandomForest)
+plot_predictions(y_test, trained_models["RandomForest"].predict(X_test))
+
+# ========================================
+# 6. Feature Importance
+# ========================================
+# Display top features for tree-based models
+feature_importance(trained_models["RandomForest"], X_train.columns)
