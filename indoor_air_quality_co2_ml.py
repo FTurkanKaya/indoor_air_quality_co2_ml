@@ -2,13 +2,16 @@
 # End-to-End Diabetes Machine Learning Pipeline I
 ################################################
 
-# 1. Exploratory Data Analysis
-# 2. Data Preprocessing & Feature Engineering
-# 3. Base Models
-# 4. Automated Hyperparameter Optimization
-# 5. Stacking & Ensemble Learning
-# 6. Prediction for a New Observation
-# 7. Pipeline Main Function
+# 1. Data Loading
+# 2. Data Validation (sensor sanity checks)
+# 3. Exploratory Data Analysis (EDA)
+# 4. Domain-based Cleaning
+# 5. Feature Engineering (time + interaction)
+# 6. Train / Test Split (time-aware)
+# 7. Baseline Regression
+# 8. Advanced Models
+# 9. Evaluation & Interpretation
+#################################################
 
 import joblib
 import pandas as pd
@@ -47,6 +50,41 @@ df.head()
 # --- Data Overview ---
 df.info()       # Check null values and types
 df.describe().T   # Summary statistics for numeric columns
+
+# Dataset Summary (n = 6200)
+# No missing values detected across variables.
+
+# CO2:
+# Mean (~432 ppm) and median (400 ppm) are close, indicating a relatively balanced distribution.
+# Maximum value (3000 ppm) is an extreme outlier and may indicate poor air quality or sensor anomaly.
+# Values >2000 ppm should be reviewed.
+
+# PM2.5:
+# Right-skewed distribution (mean > median) with very high variance.
+# Invalid values detected (e.g., -1).
+# Extreme maximum (999.9) likely represents sensor saturation or error code.
+# Requires strict filtering and outlier handling.
+
+# PM10:
+# Strong right skew and large variability.
+# Physically invalid minimum (-1) and extreme maximum (1999.9).
+# Similar preprocessing strategy to PM2.5 is required.
+
+# Temperature:
+# Stable and realistic range (11–21.2 °C).
+# Low variance indicates reliable sensor measurements.
+# No immediate preprocessing required.
+
+# Humidity:
+# Values exceed expected 0–100% range.
+# Likely incorrect scaling or non-standard sensor unit.
+# Must be rescaled or reinterpreted before use.
+
+# Status:
+# Binary variable (0/1) with ~9.8% positive class.
+# Indicates class imbalance.
+# Accuracy alone is insufficient; use precision/recall/F1 for evaluation.
+
 
 # --- Check unique values for categorical columns ---
 df['CO2 CATEGORY'].value_counts()
@@ -87,6 +125,9 @@ utils.correlation_matrix(df, numeric_cols)
 # - Temperature is moderately inversely correlated with humidity
 # - PM2.5 and PM10 exhibit strong positive correlation (0.66), indicating shared sources
 # - Low overall correlation suggests minimal feature redundancy
+
+
+
 
 
 

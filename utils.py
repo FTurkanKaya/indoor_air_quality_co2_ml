@@ -189,26 +189,6 @@ def grab_col_names(dataframe, cat_th=10, car_th=20):
 ################################################
 # 5. PREPROCESSING PIPELINE
 ################################################
-def add_time_features(df, time_col="TIME"):
-    """Timestamp bazlı özellikler ekler."""
-    df = df.copy()
-    if time_col in df.columns:
-        ts = pd.to_datetime(df[time_col], errors="coerce")
-        df["hour"] = ts.dt.hour
-        df["dayofweek"] = ts.dt.dayofweek
-        df["is_weekend"] = ts.dt.dayofweek.isin([5, 6]).astype(int)
-    return df
-
-
-def add_interaction_features(df):
-    """Çevresel parametreler arasında etkileşim özellikleri ekler."""
-    df = df.copy()
-    if {"TEMPERATURE", "HUMIDITY"}.issubset(df.columns):
-        df["temp_humidity"] = df["TEMPERATURE"] * df["HUMIDITY"]
-    if {"PM2.5", "PM10"}.issubset(df.columns):
-        df["pm_total"] = df["PM2.5"] + df["PM10"]
-    return df
-
 
 def air_quality_pipeline(df, test_size=0.2, scaler_type="standard", random_state=42):
     df = df.copy()
