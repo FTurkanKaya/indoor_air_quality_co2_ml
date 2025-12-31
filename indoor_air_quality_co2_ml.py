@@ -13,40 +13,31 @@
 # 9. Evaluation & Interpretation
 #################################################
 
-import joblib
-import pandas as pd
-import seaborn as sns
-import utils
-from matplotlib import pyplot as plt
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier, AdaBoostClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_validate, GridSearchCV
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.preprocessing import StandardScaler
 import os
-import matplotlib
-matplotlib.use("TkAgg")
+sys.path.append(os.path.join(os.getcwd(), "src"))
+import pandas as pd
 import matplotlib.pyplot as plt
-import importlib
-importlib.reload(utils)
 
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', 500)
+# Import functions from src modules
+from data_loader import load_data
+from eda import num_summary, cat_summary, correlation_matrix
+from cleaning import replace_with_thresholds, clean_data, outlier_thresholds
+from features import add_time_features, add_interaction_features, grab_col_names, one_hot_encoder
+from models import build_regression_models, train_models, preprocess_for_model, regression_hyperparameter_optimization
+from evaluation import regression_metrics, plot_predictions, feature_importance
 
-
-################################################
-# 1. Exploratory Data Analysis
-################################################
+# =============================================
+# 1. LOAD DATA
+# =============================================
 base_path = os.path.join(os.getcwd(), "data")
 file_name = "Air-Quality-Dataset.csv"
 data_path = os.path.join(base_path, file_name)
+df = load_data(data_path)
 
-# Read CSV with semicolon delimiter
-df = utils.load_data(data_path)
-df.head()
 
+################################################
+# 2. Exploratory Data Analysis
+################################################
 # --- Data Overview ---
 df.info()       # Check null values and types
 df.describe().T   # Summary statistics for numeric columns
@@ -114,10 +105,10 @@ for col in numeric_cols:
 
 # Visualization of numerical variables
 for col in numeric_cols:
-    utils.num_summary(df, col, plot=True)
+    num_summary(df, col, plot=True)
 
 # Correlation analysis between numerical variables
-utils.correlation_matrix(df, numeric_cols)
+correlation_matrix(df, numeric_cols)
 
 # Correlation summary:
 ############################
@@ -127,25 +118,79 @@ utils.correlation_matrix(df, numeric_cols)
 # - Low overall correlation suggests minimal feature redundancy
 
 
+# =============================================
+# 3. DATA CLEANING
+# =============================================
+# Clip negative values for numeric columns
+df = clean_data(df, cols_to_clip=numeric_cols, time_col="TIME")
+
+# Replace outliers with thresholds
+for col in numeric_cols:
+    replace_with_thresholds(df, col)
+
+
+print(df.info())
+print(df.describe().T)  # Min, Max, Mean, 25/50/75% quantiles, vs.
+print(df.isnull().sum())
+
+# ==========================================================
+# Observations:
+# ==========================================================
+# 1. Missing values: All columns have 0 missing values
+# 2. Data types:
+#    - TIME: datetime64[ns, UTC]
+#    - CO2, Status: int64
+#    - PM2.5, PM10, TEMPERATURE, HUMIDITY: float64
+#    - Categorical columns: object
+# 3. Outliers:
+#    - CO2: max 498 (previous outlier 3000 removed)
+#    - PM2.5: max 15.55 (previous extreme 999.9 removed)
+#    - PM10: max 38.55 (previous extreme 1999.9 removed)
+#    - HUMIDITY: still very high (~622), requires further correction
 
 
 
+# ==========================================================
+# Feature Engineering
+# ==========================================================
 
-# Data Preprocessing & Feature Engineering
-##############################################################
-X_train, X_test, y_train, y_test, scaler = utils.air_quality_pipeline(df)
+# 1. Time-based Features
+# - Extract hour, day of week, and weekend indicator from timestamp
+df = add_time_features(df, time_col="TIME")
+df.head()
 
-######################################################
-# Base Models
-######################################################
-preprocessor = 'passthrough'
+# 2. Interaction Features
+# - Create new features by combining existing numeric variables
+#   a) temp_humidity: interaction between TEMPERATURE and HUMIDITY
+#   b) pm_total: sum of PM2.5 and PM10 to represent total particulate matter
+df = add_interaction_features(df)
 
-results = utils.base_models_pipeline(X_train, y_train, preprocessor=preprocessor, scoring="roc_auc", cv=3)
+# 3. Column Summary
+# - Identify categorical columns, numeric columns, and categorical but cardinal columns
+cat_cols, num_cols, cat_but_car = grab_col_names(df)
+print("Categorical Columns:", cat_cols)
+print("Numerical Columns:", num_cols)
+print("Categorical but Cardinal Columns:", cat_but_car)
 
-print(results)
+# 4. One-Hot Encoding (optional)
+# - Convert categorical variables into dummy/indicator variables
+# df = one_hot_encoder(df, categorical_cols=cat_cols, drop_first=True)
 
-cat_cols, num_cols, cat_but_car = utils.grab_col_names(df)
-print("Categorical:", cat_cols)
-print("Numerical:", num_cols)
-print("Cat but cardinal:", cat_but_car)
+# ==========================================================
+# HUMIDITY Normalization / Scaling
+# ==========================================================
 
+# - HUMIDITY values are unusually high (~622)
+# - We can scale them to 0-100% range using MinMaxScaler or simple division
+df["HUMIDITY"] = (df["HUMIDITY"] - df["HUMIDITY"].min()) / (df["HUMIDITY"].max() - df["HUMIDITY"].min()) * 100
+
+# Verify the scaled HUMIDITY
+print(df["HUMIDITY"].describe())
+
+# ==========================================================
+# Observations:
+# ==========================================================
+# 1. Time features added for potential temporal patterns
+# 2. Interaction features help models capture combined effects
+# 3. HUMIDITY normalized to 0-100 range to make it physically meaningful
+# 4. Dataset is now ready for model training
