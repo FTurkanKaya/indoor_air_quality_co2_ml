@@ -1,5 +1,5 @@
 ################################################
-# End-to-End Diabetes Machine Learning Pipeline I
+# End-to-End Diabetes Machine Learning Pipeline
 ################################################
 
 # 1. Data Loading
@@ -13,89 +13,43 @@
 # 9. Evaluation & Interpretation
 #################################################
 
+# 1. Import Libraries
 import os
-sys.path.append(os.path.join(os.getcwd(), "src"))
+import sys
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use("TkAgg")
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
 
-# Import functions from src modules
+# Add src folder to path
+sys.path.append(os.path.join(os.getcwd(), "src"))
+
+# Import custom modules
 from data_loader import load_data
 from eda import num_summary, cat_summary, correlation_matrix
 from cleaning import replace_with_thresholds, clean_data, outlier_thresholds
 from features import add_time_features, add_interaction_features, grab_col_names, one_hot_encoder
-from models import build_regression_models, train_models, preprocess_for_model, regression_hyperparameter_optimization
+from models import build_regression_models, train_models, preprocess_for_model, regression_hyperparameter_optimization, cross_validate_models
 from evaluation import regression_metrics, plot_predictions, feature_importance
 
 # =============================================
-# 1. LOAD DATA
+# 2. Load Data
 # =============================================
 base_path = os.path.join(os.getcwd(), "data")
 file_name = "Air-Quality-Dataset.csv"
 data_path = os.path.join(base_path, file_name)
 df = load_data(data_path)
 
+# =============================================
+# 3. Exploratory Data Analysis
+# =============================================
+df.info()       # Check column types and null values
+df.describe().T # Summary statistics
 
-################################################
-# 2. Exploratory Data Analysis
-################################################
-# --- Data Overview ---
-df.info()       # Check null values and types
-df.describe().T   # Summary statistics for numeric columns
-
-# Dataset Summary (n = 6200)
-# No missing values detected across variables.
-
-# CO2:
-# Mean (~432 ppm) and median (400 ppm) are close, indicating a relatively balanced distribution.
-# Maximum value (3000 ppm) is an extreme outlier and may indicate poor air quality or sensor anomaly.
-# Values >2000 ppm should be reviewed.
-
-# PM2.5:
-# Right-skewed distribution (mean > median) with very high variance.
-# Invalid values detected (e.g., -1).
-# Extreme maximum (999.9) likely represents sensor saturation or error code.
-# Requires strict filtering and outlier handling.
-
-# PM10:
-# Strong right skew and large variability.
-# Physically invalid minimum (-1) and extreme maximum (1999.9).
-# Similar preprocessing strategy to PM2.5 is required.
-
-# Temperature:
-# Stable and realistic range (11–21.2 °C).
-# Low variance indicates reliable sensor measurements.
-# No immediate preprocessing required.
-
-# Humidity:
-# Values exceed expected 0–100% range.
-# Likely incorrect scaling or non-standard sensor unit.
-# Must be rescaled or reinterpreted before use.
-
-# Status:
-# Binary variable (0/1) with ~9.8% positive class.
-# Indicates class imbalance.
-# Accuracy alone is insufficient; use precision/recall/F1 for evaluation.
-
-
-# --- Check unique values for categorical columns ---
-df['CO2 CATEGORY'].value_counts()
-df['PM2.5 CATEGORY'].value_counts()
-df['PM10 CATEGORY'].value_counts()
-
-
-# --- Time series plot for CO2 ---
-plt.figure()
-plt.plot(df["TIME"], df["CO2"])
-plt.title("CO2 Concentration Over Time")
-plt.xlabel("Time")
-plt.ylabel("CO2 (ppm)")
-plt.show()
-
-# --- Distribution plots for numeric features ---
+# Distribution plots for numeric features
 numeric_cols = ["CO2", "PM2.5", "PM10", "TEMPERATURE", "HUMIDITY"]
-
 for col in numeric_cols:
     plt.figure()
     plt.hist(df[col], bins=30)
@@ -104,148 +58,139 @@ for col in numeric_cols:
     plt.ylabel("Frequency")
     plt.show()
 
-
-# Visualization of numerical variables
-for col in numeric_cols:
-    num_summary(df, col, plot=True)
-
-# Correlation analysis between numerical variables
+# Correlation analysis
 correlation_matrix(df, numeric_cols)
 
-# Correlation summary:
-############################
-# - Humidity shows weak or negligible correlation with CO2 and particulate matter
-# - Temperature is moderately inversely correlated with humidity
-# - PM2.5 and PM10 exhibit strong positive correlation (0.66), indicating shared sources
-# - Low overall correlation suggests minimal feature redundancy
-
-
 # =============================================
-# 3. DATA CLEANING
+# 4. Data Cleaning
 # =============================================
-# Clip negative values for numeric columns
+# Clip negative values and interpolate missing data
 df = clean_data(df, cols_to_clip=numeric_cols, time_col="TIME")
 
-# Replace outliers with thresholds
+# Replace extreme outliers with thresholds
 for col in numeric_cols:
     replace_with_thresholds(df, col)
 
-
+# Verify cleaning
 print(df.info())
-print(df.describe().T)  # Min, Max, Mean, 25/50/75% quantiles, vs.
+print(df.describe().T)
 print(df.isnull().sum())
 
-# ==========================================================
-# Observations:
-# ==========================================================
-# 1. Missing values: All columns have 0 missing values
-# 2. Data types:
-#    - TIME: datetime64[ns, UTC]
-#    - CO2, Status: int64
-#    - PM2.5, PM10, TEMPERATURE, HUMIDITY: float64
-#    - Categorical columns: object
-# 3. Outliers:
-#    - CO2: max 498 (previous outlier 3000 removed)
-#    - PM2.5: max 15.55 (previous extreme 999.9 removed)
-#    - PM10: max 38.55 (previous extreme 1999.9 removed)
-#    - HUMIDITY: still very high (~622), requires further correction
-
-
-
-# ==========================================================
-# Feature Engineering
-# ==========================================================
-
-# 1. Time-based Features
-# - Extract hour, day of week, and weekend indicator from timestamp
+# =============================================
+# 5. Feature Engineering
+# =============================================
+# 5.1 Time-based features
 df = add_time_features(df, time_col="TIME")
-df.head()
 
-# 2. Interaction Features
-# - Create new features by combining existing numeric variables
-#   a) temp_humidity: interaction between TEMPERATURE and HUMIDITY
-#   b) pm_total: sum of PM2.5 and PM10 to represent total particulate matter
+# 5.2 Interaction features
 df = add_interaction_features(df)
 
-# 3. Column Summary
-# - Identify categorical columns, numeric columns, and categorical but cardinal columns
+# 5.3 Identify column types
 cat_cols, num_cols, cat_but_car = grab_col_names(df)
 print("Categorical Columns:", cat_cols)
 print("Numerical Columns:", num_cols)
 print("Categorical but Cardinal Columns:", cat_but_car)
 
-# ==============================
-# ONE-HOT ENCODING
-# ==============================
-
+# 5.4 One-hot encode categorical variables
 df_encoded = one_hot_encoder(df, categorical_cols=cat_cols)
 
-print(df_encoded.columns)
+# 5.5 Scale HUMIDITY to 0-100 range
+df_encoded["HUMIDITY"] = (df_encoded["HUMIDITY"] - df_encoded["HUMIDITY"].min()) / \
+                         (df_encoded["HUMIDITY"].max() - df_encoded["HUMIDITY"].min()) * 100
 
+# =============================================
+# 6. Train/Test Split
+# =============================================
+X_train, X_test, y_train, y_test, scaler = preprocess_for_model(
+    df_encoded,
+    target_col="CO2",
+    scaler_type="standard",
+    test_size=0.2,
+    random_state=42
+)
 
-# ==========================================================
-# HUMIDITY Normalization / Scaling
-# ==========================================================
-
-# - HUMIDITY values are unusually high (~622)
-# - We can scale them to 0-100% range using MinMaxScaler or simple division
-df["HUMIDITY"] = (df["HUMIDITY"] - df["HUMIDITY"].min()) / (df["HUMIDITY"].max() - df["HUMIDITY"].min()) * 100
-
-# Verify the scaled HUMIDITY
-print(df["HUMIDITY"].describe())
-
-# ==========================================================
-# Observations:
-# ==========================================================
-# 1. Time features added for potential temporal patterns
-# 2. Interaction features help models capture combined effects
-# 3. HUMIDITY normalized to 0-100 range to make it physically meaningful
-# 4. Dataset is now ready for model training
-
-
-# ========================================
-# Preprocessing & Train/Test Split
-# ========================================
-
-# Here we scale numerical features and split the dataset into training and testing sets
-X_train, X_test, y_train, y_test, scaler = preprocess_for_model(df_encoded,
-                                                                target_col="CO2",
-                                                                scaler_type="standard",
-                                                                test_size=0.2,
-                                                                random_state=42)
-
-X_train.columns
-# ========================================
-# 2. Build Regression Models
-# ========================================
-# Create a dictionary of regression models to train
+# =============================================
+# 7. Build Regression Models
+# =============================================
 models = build_regression_models()
 
-# ========================================
-# 3. Train Models
-# ========================================
-# Fit each model on the training data
-trained_models = train_models(models, X_train, y_train)
+# =============================================
+# 8. Cross-Validation
+# =============================================
+cv_results = cross_validate_models(models, X_train, y_train, cv=5)
 
-# ========================================
-# 4. Evaluate Models
-# ========================================
-# Evaluate each model on the test set
-for name, model in trained_models.items():
-    y_pred = model.predict(X_test)
-    metrics = regression_metrics(y_test, y_pred)
-    print(f"{name} performance:")
-    print(metrics)
-    print("-"*40)
+# =============================================
+# 9. Hyperparameter Optimization
+# =============================================
+# Define hyperparameter grids
+param_grid_rf = {
+    "n_estimators": [100, 200, 300],
+    "max_depth": [None, 10, 20],
+    "min_samples_split": [2, 5, 10]
+}
 
-# ========================================
-# 5. Visualize Predictions
-# ========================================
-# Plot actual vs predicted CO2 for one of the models (e.g., RandomForest)
-plot_predictions(y_test, trained_models["RandomForest"].predict(X_test))
+param_grid_xgb = {
+    "n_estimators": [100, 200],
+    "max_depth": [3, 5, 7],
+    "learning_rate": [0.01, 0.1, 0.2]
+}
 
-# ========================================
-# 6. Feature Importance
-# ========================================
-# Display top features for tree-based models
+param_grid_lgbm = {
+    "n_estimators": [100, 200],
+    "max_depth": [3, 5, 7],
+    "learning_rate": [0.01, 0.1, 0.2]
+}
+
+# Instantiate model objects
+rf = RandomForestRegressor(random_state=42)
+xgb = XGBRegressor(eval_metric='rmse', random_state=42)
+lgbm = LGBMRegressor(random_state=42)
+
+# Apply GridSearchCV
+grid_rf = GridSearchCV(rf, param_grid_rf, cv=5, scoring="neg_root_mean_squared_error", n_jobs=-1)
+grid_xgb = GridSearchCV(xgb, param_grid_xgb, cv=5, scoring="neg_root_mean_squared_error", n_jobs=-1)
+grid_lgbm = GridSearchCV(lgbm, param_grid_lgbm, cv=5, scoring="neg_root_mean_squared_error", n_jobs=-1)
+
+# Fit models
+grid_rf.fit(X_train, y_train)
+grid_xgb.fit(X_train, y_train)
+grid_lgbm.fit(X_train, y_train)
+
+# Print best hyperparameters and CV scores
+print("RandomForest best params:", grid_rf.best_params_)
+print("RandomForest best CV RMSE:", -grid_rf.best_score_)
+
+print("XGBoost best params:", grid_xgb.best_params_)
+print("XGBoost best CV RMSE:", -grid_xgb.best_score_)
+
+print("LightGBM best params:", grid_lgbm.best_params_)
+print("LightGBM best CV RMSE:", -grid_lgbm.best_score_)
+
+# =============================================
+# 10. Evaluate on Test Set
+# =============================================
+y_pred_rf = grid_rf.predict(X_test)
+y_pred_xgb = grid_xgb.predict(X_test)
+y_pred_lgbm = grid_lgbm.predict(X_test)
+
+print("RandomForest test metrics:", regression_metrics(y_test, y_pred_rf))
+print("XGBoost test metrics:", regression_metrics(y_test, y_pred_xgb))
+print("LightGBM test metrics:", regression_metrics(y_test, y_pred_lgbm))
+
+# =============================================
+# 11. Visualize Predictions
+# =============================================
+plot_predictions(y_test, y_pred_rf, title="RandomForest Predictions")
+
+# =============================================
+# 12. Feature Importance
+# =============================================
+# Create trained_models dictionary to pass into feature importance
+trained_models = {
+    "RandomForest": grid_rf.best_estimator_,
+    "XGBoost": grid_xgb.best_estimator_,
+    "LightGBM": grid_lgbm.best_estimator_
+}
+
+# Feature importance for RandomForest
 feature_importance(trained_models["RandomForest"], X_train.columns)
