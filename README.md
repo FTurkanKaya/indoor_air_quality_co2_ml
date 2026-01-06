@@ -94,6 +94,8 @@ The end-to-end pipeline consists of:
  
  2- **Exploratory Data Analysis (EDA) –** Distribution plots, correlation analysis.
  
+ <img width="1000" height="800" alt="Correlation_analysis_numerical_variables" src="https://github.com/user-attachments/assets/361c91f9-82d0-471a-a17c-0b38e2968cc5" />
+
  3- **Data Cleaning –** Clip negatives, replace extreme outliers, interpolate where needed.
  
  4- **Feature Engineering**
@@ -116,6 +118,7 @@ The end-to-end pipeline consists of:
 ---
 
 ## Models
+
 **Model	      CV RMSE (best)	   Test RMSE	   Test R²**
 **RandomForest**	7.48	             5.70	         0.986
 **XGBoost**	      8.06	             6.68	         0.981
@@ -130,6 +133,7 @@ RandomForest provides accurate predictions with low error and high R².
 Top features for RandomForest:
 
 **Feature importance bar chart**
+
 <img width="800" height="600" alt="Top_FeatureImportance" src="https://github.com/user-attachments/assets/00f69d93-fcec-4868-9fa8-e117b1ed892f" />
 
 **Interpretation:** Humidity and time-related features are the most influential for CO2 prediction.
@@ -139,14 +143,21 @@ Top features for RandomForest:
 ## Visualizations
 
 **CO2 over time**
+
 <img width="300" height="150" alt="CO2 Concentration Over Time" src="https://github.com/user-attachments/assets/708de868-f671-4f85-b624-4de3286f96c3" />
 
 **Distribution histograms for numeric features**
+
 <img width="150" height="100" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
+
 <img width="300" height="150" alt="Distribution_humudity" src="https://github.com/user-attachments/assets/b1164e0e-f318-4a9c-b6c9-313ecdf7ebea" />
+
 <img width="300" height="150" alt="Distribution_PM2_5" src="https://github.com/user-attachments/assets/cdc021ae-803f-489f-ad11-a9efb75cda8a" />
+
 <img width="300" height="150" alt="Distribution_PM10" src="https://github.com/user-attachments/assets/0863224a-a81f-4698-8aa3-b3cf05e58010" />
+
 <img width="300" height="150" alt="Distribution_temperature" src="https://github.com/user-attachments/assets/4ea51303-fdd7-4a28-bf4c-dd3993e094b7" />
+
 
 **Predicted vs Actual CO2**
 
@@ -169,6 +180,9 @@ Actual: 415.00, Predicted: 414.15
 Actual: 498.00, Predicted: 419.29
 
 Actual: 452.00, Predicted: 452.38
+
+
+<img width="930" height="600" alt="plot_predictions" src="https://github.com/user-attachments/assets/95b80385-fa97-4bd8-90a3-3b43fda407ce" />
 
 --- 
 
