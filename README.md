@@ -134,7 +134,7 @@ Top features for RandomForest:
 
 **Feature importance bar chart**
 
-<img width="800" height="600" alt="Top_FeatureImportance" src="https://github.com/user-attachments/assets/00f69d93-fcec-4868-9fa8-e117b1ed892f" />
+<img width="400" height="200" alt="Top_FeatureImportance" src="https://github.com/user-attachments/assets/00f69d93-fcec-4868-9fa8-e117b1ed892f" />
 
 **Interpretation:** Humidity and time-related features are the most influential for CO2 prediction.
 
@@ -182,7 +182,7 @@ Actual: 498.00, Predicted: 419.29
 Actual: 452.00, Predicted: 452.38
 
 
-<img width="930" height="600" alt="plot_predictions" src="https://github.com/user-attachments/assets/95b80385-fa97-4bd8-90a3-3b43fda407ce" />
+<img width="400" height="200" alt="plot_predictions" src="https://github.com/user-attachments/assets/95b80385-fa97-4bd8-90a3-3b43fda407ce" />
 
 --- 
 
