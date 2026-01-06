@@ -1,5 +1,5 @@
 ################################################
-# End-to-End Diabetes Machine Learning Pipeline
+# End-to-End Indoor Air Quality Regression Pipeline
 ################################################
 
 # 1. Data Loading
@@ -7,7 +7,7 @@
 # 3. Exploratory Data Analysis (EDA)
 # 4. Domain-based Cleaning
 # 5. Feature Engineering (time + interaction)
-# 6. Train / Test Split (time-aware)
+# 6. Train / Test Split
 # 7. Baseline Regression
 # 8. Advanced Models
 # 9. Evaluation & Interpretation
@@ -17,7 +17,11 @@
 import os
 import sys
 import pandas as pd
+import joblib
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
@@ -50,6 +54,7 @@ df.describe().T # Summary statistics
 
 # Distribution plots for numeric features
 numeric_cols = ["CO2", "PM2.5", "PM10", "TEMPERATURE", "HUMIDITY"]
+
 for col in numeric_cols:
     plt.figure()
     plt.hist(df[col], bins=30)
@@ -93,10 +98,6 @@ print("Categorical but Cardinal Columns:", cat_but_car)
 
 # 5.4 One-hot encode categorical variables
 df_encoded = one_hot_encoder(df, categorical_cols=cat_cols)
-
-# 5.5 Scale HUMIDITY to 0-100 range
-df_encoded["HUMIDITY"] = (df_encoded["HUMIDITY"] - df_encoded["HUMIDITY"].min()) / \
-                         (df_encoded["HUMIDITY"].max() - df_encoded["HUMIDITY"].min()) * 100
 
 # =============================================
 # 6. Train/Test Split
@@ -166,6 +167,7 @@ print("XGBoost best CV RMSE:", -grid_xgb.best_score_)
 print("LightGBM best params:", grid_lgbm.best_params_)
 print("LightGBM best CV RMSE:", -grid_lgbm.best_score_)
 
+
 # =============================================
 # 10. Evaluate on Test Set
 # =============================================
@@ -176,6 +178,15 @@ y_pred_lgbm = grid_lgbm.predict(X_test)
 print("RandomForest test metrics:", regression_metrics(y_test, y_pred_rf))
 print("XGBoost test metrics:", regression_metrics(y_test, y_pred_xgb))
 print("LightGBM test metrics:", regression_metrics(y_test, y_pred_lgbm))
+
+# Save best RandomForest model
+model_dir = os.path.join(os.getcwd(), "models")
+os.makedirs(model_dir, exist_ok=True)
+
+joblib.dump(
+    grid_rf.best_estimator_,
+    os.path.join(model_dir, "random_forest_best.pkl")
+)
 
 # =============================================
 # 11. Visualize Predictions
@@ -193,4 +204,8 @@ trained_models = {
 }
 
 # Feature importance for RandomForest
-feature_importance(trained_models["RandomForest"], X_train.columns)
+best_rf = grid_rf.best_estimator_
+
+feature_importance(best_rf, X_train.columns)
+
+
