@@ -94,7 +94,7 @@ The end-to-end pipeline consists of:
  
  2- **Exploratory Data Analysis (EDA) –** Distribution plots, correlation analysis.
  
- <img width="1000" height="800" alt="Correlation_analysis_numerical_variables" src="https://github.com/user-attachments/assets/361c91f9-82d0-471a-a17c-0b38e2968cc5" />
+ <img width="400" height="200" alt="Correlation_analysis_numerical_variables" src="https://github.com/user-attachments/assets/361c91f9-82d0-471a-a17c-0b38e2968cc5" />
 
  3- **Data Cleaning –** Clip negatives, replace extreme outliers, interpolate where needed.
  
@@ -148,15 +148,15 @@ Top features for RandomForest:
 
 **Distribution histograms for numeric features**
 
-<img width="150" height="100" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
+<img width="400" height="200" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
 
-<img width="300" height="150" alt="Distribution_humudity" src="https://github.com/user-attachments/assets/b1164e0e-f318-4a9c-b6c9-313ecdf7ebea" />
+<img width="400" height="200" alt="Distribution_humudity" src="https://github.com/user-attachments/assets/b1164e0e-f318-4a9c-b6c9-313ecdf7ebea" />
 
-<img width="300" height="150" alt="Distribution_PM2_5" src="https://github.com/user-attachments/assets/cdc021ae-803f-489f-ad11-a9efb75cda8a" />
+<img width="400" height="200" alt="Distribution_PM2_5" src="https://github.com/user-attachments/assets/cdc021ae-803f-489f-ad11-a9efb75cda8a" />
 
-<img width="300" height="150" alt="Distribution_PM10" src="https://github.com/user-attachments/assets/0863224a-a81f-4698-8aa3-b3cf05e58010" />
+<img width="400" height="200" alt="Distribution_PM10" src="https://github.com/user-attachments/assets/0863224a-a81f-4698-8aa3-b3cf05e58010" />
 
-<img width="300" height="150" alt="Distribution_temperature" src="https://github.com/user-attachments/assets/4ea51303-fdd7-4a28-bf4c-dd3993e094b7" />
+<img width="400" height="200" alt="Distribution_temperature" src="https://github.com/user-attachments/assets/4ea51303-fdd7-4a28-bf4c-dd3993e094b7" />
 
 
 **Predicted vs Actual CO2**
