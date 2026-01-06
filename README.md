@@ -139,7 +139,7 @@ Top features for RandomForest:
 ## Visualizations
 
 **CO2 over time**
-<img width="300" height="1501" alt="CO2 Concentration Over Time" src="https://github.com/user-attachments/assets/708de868-f671-4f85-b624-4de3286f96c3" />
+<img width="300" height="150" alt="CO2 Concentration Over Time" src="https://github.com/user-attachments/assets/708de868-f671-4f85-b624-4de3286f96c3" />
 
 **Distribution histograms for numeric features**
 <img width="150" height="100" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
@@ -149,6 +149,7 @@ Top features for RandomForest:
 <img width="300" height="150" alt="Distribution_temperature" src="https://github.com/user-attachments/assets/4ea51303-fdd7-4a28-bf4c-dd3993e094b7" />
 
 **Predicted vs Actual CO2**
+
 First 10 predictions vs actual:
 
 Actual: 408.00, Predicted: 405.61
@@ -172,23 +173,29 @@ Actual: 452.00, Predicted: 452.38
 --- 
 
 **Usage**
+
 import joblib
 from evaluation import plot_predictions, feature_importance
 
 **Load trained model**
+
 rf_model = joblib.load("models/random_forest_best.pkl")
 
 **Predict**
+
 y_pred = rf_model.predict(X_test)
 
 **Evaluate**
+
 metrics = regression_metrics(y_test, y_pred)
 print(metrics)
 
 **Visualize predictions**
+
 plot_predictions(y_test, y_pred, title="RandomForest Predictions")
 
 **Feature importance**
+
 feature_importance(rf_model, X_train.columns)
 
 ---
