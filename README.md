@@ -90,12 +90,16 @@ indoor-air-quality-co2-ml/
 
 The end-to-end pipeline consists of:
  1- **Data Loading & Validation –** Load CSV, check for nulls and types.
+ 
  2- **Exploratory Data Analysis (EDA) –** Distribution plots, correlation analysis.
+ 
  3- **Data Cleaning –** Clip negatives, replace extreme outliers, interpolate where needed.
+ 
  4- **Feature Engineering**
   **- Time-based:** hour, day of week, weekend flag
   **- Interaction:** temp_humidity, pm_total
   **-** One-hot encoding for categorical variables
+  
  5- **Train/Test Split –** StandardScaler applied to numerical features.
 
  6- **Model Training –** DecisionTree, RandomForest, XGBoost, LightGBM
@@ -137,22 +141,31 @@ Top features for RandomForest:
 <img width="1007" height="591" alt="CO2 Concentration Over Time" src="https://github.com/user-attachments/assets/708de868-f671-4f85-b624-4de3286f96c3" />
 
 **Distribution histograms for numeric features**
-<img width="640" height="480" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
-<img width="640" height="480" alt="Distribution_humudity" src="https://github.com/user-attachments/assets/b1164e0e-f318-4a9c-b6c9-313ecdf7ebea" />
-<img width="640" height="480" alt="Distribution_PM2_5" src="https://github.com/user-attachments/assets/cdc021ae-803f-489f-ad11-a9efb75cda8a" />
-<img width="640" height="480" alt="Distribution_PM10" src="https://github.com/user-attachments/assets/0863224a-a81f-4698-8aa3-b3cf05e58010" />
-<img width="640" height="480" alt="Distribution_temperature" src="https://github.com/user-attachments/assets/4ea51303-fdd7-4a28-bf4c-dd3993e094b7" />
+<img width="300" height="150" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
+<img width="300" height="150" alt="Distribution_humudity" src="https://github.com/user-attachments/assets/b1164e0e-f318-4a9c-b6c9-313ecdf7ebea" />
+<img width="300" height="150" alt="Distribution_PM2_5" src="https://github.com/user-attachments/assets/cdc021ae-803f-489f-ad11-a9efb75cda8a" />
+<img width="300" height="150" alt="Distribution_PM10" src="https://github.com/user-attachments/assets/0863224a-a81f-4698-8aa3-b3cf05e58010" />
+<img width="300" height="150" alt="Distribution_temperature" src="https://github.com/user-attachments/assets/4ea51303-fdd7-4a28-bf4c-dd3993e094b7" />
 
 **Predicted vs Actual CO2**
 First 10 predictions vs actual:
+
 Actual: 408.00, Predicted: 405.61
+
 Actual: 333.00, Predicted: 330.34
+
 Actual: 306.00, Predicted: 306.00
+
 Actual: 402.00, Predicted: 402.47
+
 Actual: 415.00, Predicted: 416.27
+
 Actual: 473.00, Predicted: 475.31
+
 Actual: 415.00, Predicted: 414.15
+
 Actual: 498.00, Predicted: 419.29
+
 Actual: 452.00, Predicted: 452.38
 
 --- 
@@ -161,20 +174,20 @@ Actual: 452.00, Predicted: 452.38
 import joblib
 from evaluation import plot_predictions, feature_importance
 
-# Load trained model
+## Load trained model
 rf_model = joblib.load("models/random_forest_best.pkl")
 
-# Predict
+## Predict
 y_pred = rf_model.predict(X_test)
 
-# Evaluate
+## Evaluate
 metrics = regression_metrics(y_test, y_pred)
 print(metrics)
 
-# Visualize predictions
+## Visualize predictions
 plot_predictions(y_test, y_pred, title="RandomForest Predictions")
 
-# Feature importance
+## Feature importance
 feature_importance(rf_model, X_train.columns)
 
 ---
