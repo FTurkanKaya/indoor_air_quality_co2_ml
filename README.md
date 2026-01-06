@@ -27,7 +27,10 @@ Indoor air quality is a critical factor for health and comfort. Accurately predi
   - Humidity (%)  
   - PM2.5, PM10  
   - CO₂ (ppm) — target
-
+- **Exploratory analysis revealed:**
+ Right-skewed PM distributions
+ Some extreme outliers in CO2 and particulate matter
+ Unscaled HUMIDITY values exceeding expected range
 ---
 
 ## Methodology
@@ -83,6 +86,99 @@ indoor-air-quality-co2-ml/
 
 ---
 
+## Pipeline
+
+The end-to-end pipeline consists of:
+ 1- **Data Loading & Validation –** Load CSV, check for nulls and types.
+ 2- **Exploratory Data Analysis (EDA) –** Distribution plots, correlation analysis.
+ 3- **Data Cleaning –** Clip negatives, replace extreme outliers, interpolate where needed.
+ 4- **Feature Engineering**
+  **- Time-based:** hour, day of week, weekend flag
+  **- Interaction:** temp_humidity, pm_total
+  **-** One-hot encoding for categorical variables
+ 5- **Train/Test Split –** StandardScaler applied to numerical features.
+
+ 6- **Model Training –** DecisionTree, RandomForest, XGBoost, LightGBM
+
+ 7- **Cross-Validation –** 5-fold CV RMSE for model selection
+
+ 8- **Hyperparameter Optimization –** GridSearchCV to tune key parameters
+
+ 9- **Evaluation –** RMSE, MAE, R² on test set
+
+10- **Interpretation –** Feature importance visualization
+
+---
+
+## Models
+**Model	      CV RMSE (best)	   Test RMSE	   Test R²**
+**RandomForest**	7.48	             5.70	         0.986
+**XGBoost**	      8.06	             6.68	         0.981
+**LightGBM**	    8.63	             7.08	         0.979
+
+**Best model:** RandomForest
+RandomForest provides accurate predictions with low error and high R².
+
+---
+
+## Feature Importance
+Top features for RandomForest:
+
+**Feature importance bar chart**
+<img width="800" height="600" alt="Top_FeatureImportance" src="https://github.com/user-attachments/assets/00f69d93-fcec-4868-9fa8-e117b1ed892f" />
+
+**Interpretation:** Humidity and time-related features are the most influential for CO2 prediction.
+
+---
+
+## Visualizations
+
+**CO2 over time**
+<img width="1007" height="591" alt="CO2 Concentration Over Time" src="https://github.com/user-attachments/assets/708de868-f671-4f85-b624-4de3286f96c3" />
+
+**Distribution histograms for numeric features**
+<img width="640" height="480" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
+<img width="640" height="480" alt="Distribution_humudity" src="https://github.com/user-attachments/assets/b1164e0e-f318-4a9c-b6c9-313ecdf7ebea" />
+<img width="640" height="480" alt="Distribution_PM2_5" src="https://github.com/user-attachments/assets/cdc021ae-803f-489f-ad11-a9efb75cda8a" />
+<img width="640" height="480" alt="Distribution_PM10" src="https://github.com/user-attachments/assets/0863224a-a81f-4698-8aa3-b3cf05e58010" />
+<img width="640" height="480" alt="Distribution_temperature" src="https://github.com/user-attachments/assets/4ea51303-fdd7-4a28-bf4c-dd3993e094b7" />
+
+**Predicted vs Actual CO2**
+First 10 predictions vs actual:
+Actual: 408.00, Predicted: 405.61
+Actual: 333.00, Predicted: 330.34
+Actual: 306.00, Predicted: 306.00
+Actual: 402.00, Predicted: 402.47
+Actual: 415.00, Predicted: 416.27
+Actual: 473.00, Predicted: 475.31
+Actual: 415.00, Predicted: 414.15
+Actual: 498.00, Predicted: 419.29
+Actual: 452.00, Predicted: 452.38
+
+--- 
+
+## Usage
+import joblib
+from evaluation import plot_predictions, feature_importance
+
+# Load trained model
+rf_model = joblib.load("models/random_forest_best.pkl")
+
+# Predict
+y_pred = rf_model.predict(X_test)
+
+# Evaluate
+metrics = regression_metrics(y_test, y_pred)
+print(metrics)
+
+# Visualize predictions
+plot_predictions(y_test, y_pred, title="RandomForest Predictions")
+
+# Feature importance
+feature_importance(rf_model, X_train.columns)
+
+---
+
 ## Technologies Used
 - Python  
 - pandas, numpy  
@@ -104,6 +200,16 @@ indoor-air-quality-co2-ml/
 - Hyperparameter optimization and model ensembling  
 - Deploy as a real-time CO₂ monitoring tool  
 - Extend to multi-room or multi-building datasets
+
+---
+
+## Notes
+
+HUMIDITY scaling is handled only in preprocess_for_model to avoid double-scaling.
+
+All functions are modular, stored in src/ folder for clean OOP-style import and reuse.
+
+GridSearchCV ensures the best hyperparameters are selected using cross-validation.
 
 ---
 
