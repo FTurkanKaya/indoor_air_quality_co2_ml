@@ -89,6 +89,7 @@ indoor-air-quality-co2-ml/
 ## Pipeline
 
 The end-to-end pipeline consists of:
+
  1- **Data Loading & Validation –** Load CSV, check for nulls and types.
  
  2- **Exploratory Data Analysis (EDA) –** Distribution plots, correlation analysis.
@@ -138,10 +139,10 @@ Top features for RandomForest:
 ## Visualizations
 
 **CO2 over time**
-<img width="1007" height="591" alt="CO2 Concentration Over Time" src="https://github.com/user-attachments/assets/708de868-f671-4f85-b624-4de3286f96c3" />
+<img width="300" height="1501" alt="CO2 Concentration Over Time" src="https://github.com/user-attachments/assets/708de868-f671-4f85-b624-4de3286f96c3" />
 
 **Distribution histograms for numeric features**
-<img width="300" height="150" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
+<img width="150" height="100" alt="Distribution_CO2" src="https://github.com/user-attachments/assets/6284a3cd-fa7d-4bfd-9e68-474671e16bc2" />
 <img width="300" height="150" alt="Distribution_humudity" src="https://github.com/user-attachments/assets/b1164e0e-f318-4a9c-b6c9-313ecdf7ebea" />
 <img width="300" height="150" alt="Distribution_PM2_5" src="https://github.com/user-attachments/assets/cdc021ae-803f-489f-ad11-a9efb75cda8a" />
 <img width="300" height="150" alt="Distribution_PM10" src="https://github.com/user-attachments/assets/0863224a-a81f-4698-8aa3-b3cf05e58010" />
@@ -170,24 +171,24 @@ Actual: 452.00, Predicted: 452.38
 
 --- 
 
-## Usage
+**Usage**
 import joblib
 from evaluation import plot_predictions, feature_importance
 
-## Load trained model
+**Load trained model**
 rf_model = joblib.load("models/random_forest_best.pkl")
 
-## Predict
+**Predict**
 y_pred = rf_model.predict(X_test)
 
-## Evaluate
+**Evaluate**
 metrics = regression_metrics(y_test, y_pred)
 print(metrics)
 
-## Visualize predictions
+**Visualize predictions**
 plot_predictions(y_test, y_pred, title="RandomForest Predictions")
 
-## Feature importance
+**Feature importance**
 feature_importance(rf_model, X_train.columns)
 
 ---
