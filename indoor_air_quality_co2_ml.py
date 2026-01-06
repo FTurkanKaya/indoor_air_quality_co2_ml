@@ -209,3 +209,24 @@ best_rf = grid_rf.best_estimator_
 feature_importance(best_rf, X_train.columns)
 
 
+# =============================================
+# Test Best Model – Predictions & Interpretation
+# =============================================
+# 1. Predict on test set
+y_pred_test = best_rf.predict(X_test)
+
+# 2. Display first few predictions vs actual values
+print("First 10 predictions vs actual:")
+for actual, pred in zip(y_test[:10], y_pred_test[:10]):
+    print(f"Actual: {actual:.2f}, Predicted: {pred:.2f}")
+
+# 4. Compute test metrics
+test_metrics = regression_metrics(y_test, y_pred_test)
+print("\nRandomForest Test Metrics:", test_metrics)
+
+# 5. Plot predictions vs actual
+plot_predictions(y_test, y_pred_test, title="RandomForest Test Predictions")
+
+# 6. Feature importance
+feature_importance(best_rf, X_train.columns)
+
